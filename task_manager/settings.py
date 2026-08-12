@@ -32,6 +32,7 @@ DEBUG = os.environ.get(
 ALLOWED_HOSTS = [
     "localhost",
     "127.0.0.1",
+    "deploy-175w.onrender.com"
 ]
 
 # Application definition
