@@ -6,58 +6,94 @@
 <head>
 
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>{% block title %}Task Manager{% endblock %}</title>
 
+    <meta name="theme-color" content="#1b231f">
+    <meta name="description" content="A modern and elegant Django task management application">
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    {% block extra_css %}{% endblock %}
 
 </head>
 
 <body>
 
+    <!-- Ambient background -->
+    <div class="ambient ambient-one"></div>
+    <div class="ambient ambient-two"></div>
+    <div class="ambient ambient-three"></div>
+
     <header class="navbar" id="navbar">
 
         <div class="container nav-content">
 
-            <a href="{% url 'task_list' %}" class="logo">
-                Task Manager
+            <!-- Brand -->
+            <a href="{% url 'task_list' %}" class="logo" aria-label="Task Manager home">
+
+                <span class="logo-mark">
+                    <span class="logo-check"></span>
+                </span>
+
+                <span class="logo-text">
+                    Task Manager
+                </span>
+
             </a>
 
-            <nav>
+            <!-- Navigation -->
+            <nav aria-label="Main navigation">
 
                 {% if user.is_authenticated %}
 
-                <span class="welcome">
-                    Hi, {{ user.username }}
-                </span>
+                <div class="nav-user">
 
-                <a href="{% url 'task_list' %}">
+                    <span class="user-avatar">
+                        {{ user.username|first|upper }}
+                    </span>
+
+                    <span class="welcome">
+                        Hi, {{ user.username }}
+                    </span>
+
+                </div>
+
+                <a href="{% url 'task_list' %}" class="nav-link">
                     Tasks
                 </a>
 
-                <a href="{% url 'task_create' %}">
-                    Add Task
+                <a href="{% url 'task_create' %}" class="nav-button nav-button-primary">
+                    <span class="button-icon">+</span>
+                    <span>Add Task</span>
                 </a>
 
                 <form method="post" action="{% url 'logout' %}" class="logout-form">
+
                     {% csrf_token %}
 
                     <button type="submit" class="nav-button danger">
-                        Logout
+                        <span class="logout-icon">↪</span>
+                        <span>Logout</span>
                     </button>
 
                 </form>
 
                 {% else %}
 
-                <a href="{% url 'login' %}">
+                <a href="{% url 'login' %}" class="nav-link">
                     Login
                 </a>
 
-                <a href="{% url 'register' %}" class="nav-button">
+                <a href="{% url 'register' %}" class="nav-button nav-button-primary">
                     Register
                 </a>
 
@@ -70,44 +106,157 @@
     </header>
 
 
-    <main class="container">
+    <main class="container page-shell">
 
         {% if messages %}
 
-        {% for message in messages %}
+        <div class="messages-container">
 
-        <div class="message {{ message.tags }}">
-            {{ message }}
+            {% for message in messages %}
+
+            <div class="message {{ message.tags }}">
+
+                <span class="message-icon">
+
+                    {% if message.tags == 'error' %}
+                    !
+                    {% elif message.tags == 'warning' %}
+                    !
+                    {% elif message.tags == 'info' %}
+                    i
+                    {% else %}
+                    ✓
+                    {% endif %}
+
+                </span>
+
+                <span class="message-content">
+                    {{ message }}
+                </span>
+
+                <button type="button" class="message-close" aria-label="Close message"
+                    onclick="this.parentElement.remove()">
+                    ×
+                </button>
+
+            </div>
+
+            {% endfor %}
+
         </div>
-
-        {% endfor %}
 
         {% endif %}
 
 
-        {% block content %}
+        <div class="page-content">
 
-        {% endblock %}
+            {% block content %}
+
+            {% endblock %}
+
+        </div>
 
     </main>
 
+
+    <!-- Scroll progress -->
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+
     <script>
-        // Adds depth to the navbar once the page scrolls,
-        // so it reads as a fixed ledger spine rather than a flat bar.
         (function () {
-            var nav = document.getElementById('navbar');
-            if (!nav) return;
-            var onScroll = function () {
-                if (window.scrollY > 8) {
-                    nav.classList.add('is-scrolled');
+
+            const nav = document.getElementById("navbar");
+            const scrollProgress = document.getElementById("scrollProgress");
+
+            function handleScroll() {
+
+                const scrollTop = window.scrollY;
+
+                if (scrollTop > 12) {
+                    nav.classList.add("is-scrolled");
                 } else {
-                    nav.classList.remove('is-scrolled');
+                    nav.classList.remove("is-scrolled");
                 }
-            };
-            document.addEventListener('scroll', onScroll, { passive: true });
-            onScroll();
+
+                const documentHeight =
+                    document.documentElement.scrollHeight - window.innerHeight;
+
+                const progress =
+                    documentHeight > 0
+                        ? (scrollTop / documentHeight) * 100
+                        : 0;
+
+                scrollProgress.style.width = progress + "%";
+            }
+
+            document.addEventListener("scroll", handleScroll, {
+                passive: true
+            });
+
+            handleScroll();
+
         })();
+
+
+        /* Subtle mouse movement for ambient glow */
+        (function () {
+
+            const root = document.documentElement;
+
+            document.addEventListener("mousemove", function (event) {
+
+                const x = (event.clientX / window.innerWidth) * 100;
+                const y = (event.clientY / window.innerHeight) * 100;
+
+                root.style.setProperty("--mouse-x", x + "%");
+                root.style.setProperty("--mouse-y", y + "%");
+
+            });
+
+        })();
+
+
+        /* Auto-hide messages */
+        (function () {
+
+            const messages = document.querySelectorAll(".message");
+
+            messages.forEach(function (message) {
+
+                setTimeout(function () {
+
+                    message.classList.add("message-hide");
+
+                    setTimeout(function () {
+                        message.remove();
+                    }, 350);
+
+                }, 5000);
+
+            });
+
+        })();
+
+
+        /* Button press micro interaction */
+        document.addEventListener("click", function (event) {
+
+            const button = event.target.closest(".button, .nav-button");
+
+            if (!button) return;
+
+            button.classList.remove("button-clicked");
+
+            void button.offsetWidth;
+
+            button.classList.add("button-clicked");
+
+        });
+
     </script>
+
+    {% block extra_js %}{% endblock %}
 
 </body>
 
