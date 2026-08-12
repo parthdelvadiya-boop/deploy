@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}My Tasks{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+
+    <div>
+        <h1>My Tasks</h1>
+
+        <p>
+            Manage your daily tasks.
+        </p>
+    </div>
+
+    <a href="{% url 'task_create' %}" class="button">
+        + Add Task
+    </a>
+
+</div>
+
+
+<form method="get" class="search-form">
+
+    <input type="text" name="search" value="{{ search }}" placeholder="Search tasks...">
+
+    <button type="submit" class="button">
+        Search
+    </button>
+
+</form>
+
+
+<div class="task-grid">
+
+    {% for task in tasks %}
+
+    <div class="task-card">
+
+        <div class="task-header">
+
+            <h2>
+                {{ task.title }}
+            </h2>
+
+            {% if task.status == "completed" %}
+
+            <span class="badge completed">
+                Completed
+            </span>
+
+            {% else %}
+
+            <span class="badge pending">
+                Pending
+            </span>
+
+            {% endif %}
+
+        </div>
+
+
+        <p class="description">
+
+            {% if task.description %}
+
+            {{ task.description }}
+
+            {% else %}
+
+            No description.
+
+            {% endif %}
+
+        </p>
+
+
+        <small>
+            Created:
+            {{ task.created_at|date:"M d, Y H:i" }}
+        </small>
+
+
+        <div class="actions">
+
+            <a href="{% url 'task_update' task.pk %}" class="button secondary">
+                Edit
+            </a>
+
+            {% if task.status != "completed" %}
+
+            <a href="{% url 'task_complete' task.pk %}" class="button success">
+                Complete
+            </a>
+
+            {% endif %}
+
+            <a href="{% url 'task_delete' task.pk %}" class="button danger">
+                Delete
+            </a>
+
+        </div>
+
+    </div>
+
+    {% empty %}
+
+    <div class="empty">
+
+        <h2>No tasks found</h2>
+
+        <p>
+            Create your first task.
+        </p>
+
+        <a href="{% url 'task_create' %}" class="button">
+            Create Task
+        </a>
+
+    </div>
+
+    {% endfor %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,114 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>{% block title %}Task Manager{% endblock %}</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+</head>
+
+<body>
+
+    <header class="navbar" id="navbar">
+
+        <div class="container nav-content">
+
+            <a href="{% url 'task_list' %}" class="logo">
+                Task Manager
+            </a>
+
+            <nav>
+
+                {% if user.is_authenticated %}
+
+                <span class="welcome">
+                    Hi, {{ user.username }}
+                </span>
+
+                <a href="{% url 'task_list' %}">
+                    Tasks
+                </a>
+
+                <a href="{% url 'task_create' %}">
+                    Add Task
+                </a>
+
+                <form method="post" action="{% url 'logout' %}" class="logout-form">
+                    {% csrf_token %}
+
+                    <button type="submit" class="nav-button danger">
+                        Logout
+                    </button>
+
+                </form>
+
+                {% else %}
+
+                <a href="{% url 'login' %}">
+                    Login
+                </a>
+
+                <a href="{% url 'register' %}" class="nav-button">
+                    Register
+                </a>
+
+                {% endif %}
+
+            </nav>
+
+        </div>
+
+    </header>
+
+
+    <main class="container">
+
+        {% if messages %}
+
+        {% for message in messages %}
+
+        <div class="message {{ message.tags }}">
+            {{ message }}
+        </div>
+
+        {% endfor %}
+
+        {% endif %}
+
+
+        {% block content %}
+
+        {% endblock %}
+
+    </main>
+
+    <script>
+        // Adds depth to the navbar once the page scrolls,
+        // so it reads as a fixed ledger spine rather than a flat bar.
+        (function () {
+            var nav = document.getElementById('navbar');
+            if (!nav) return;
+            var onScroll = function () {
+                if (window.scrollY > 8) {
+                    nav.classList.add('is-scrolled');
+                } else {
+                    nav.classList.remove('is-scrolled');
+                }
+            };
+            document.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+        })();
+    </script>
+
+</body>
+
+</html>
